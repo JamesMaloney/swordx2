@@ -6,7 +6,6 @@
 #ifndef bst_h
 #define bst_h
 
-#include <stdbool.h>
 #include <wchar.h>
 
 typedef struct node {
@@ -16,10 +15,10 @@ typedef struct node {
     struct node *right;
 } Node;
 
-void findFirstOccurrence(FILE *fileout, Node *root, bool alpha);
+void findFirstOccurrence(FILE *fileout, Node *root, short alpha);
 Node* getmostfrequent(void);
 Node* insert(Node *root, wchar_t occurrence[50]);
 Node* search(Node *root, wchar_t occurrence[50]);
-void visitInorder(FILE *fileout, Node *root, bool alpha);
+void visitInorder(FILE *fileout, Node *root, short alpha);
 
 #endif /* bst_h */

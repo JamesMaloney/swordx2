@@ -7,9 +7,7 @@
 #define swordx2_h
 
 #include <dirent.h>
-#include <stdbool.h>
 #include <getopt.h>
-#include "bst.h"
 
 //The longoptions struct lists the available options, their long form and whether they have arguments or not
 static struct option longoptions[] = {
@@ -28,6 +26,7 @@ static struct option longoptions[] = {
 
 //Main methods declaration
 int optionsManager(int argc, char *argv[]);
+void setUpLocale(void);
 void inputManager(char *argv[], int index);
 void showHelp(void);
 void outputSetup(char currentdir[]);
@@ -36,11 +35,11 @@ void readDirectory(DIR *directory, char fullpath[200], char path[]);
 void visitLink(char fullpath[]);
 void occurrencesList(char path[]);
 void printLog(clock_t end, clock_t begin, char path[]);
-void readFile(FILE *filein, wchar_t words[50], int letter, bool toignore, bool valid);
-void checkAndAddWord(wchar_t words[50], int letter, bool toignore);
+void readFile(FILE *filein, wchar_t words[50], int letter, short toignore, short valid);
+void checkAndAddWord(wchar_t words[50], int letter, short toignore);
 void printWords(void);
 void printByOccurrence(FILE *fileout);
+short isAlphaOnly(wchar_t word[]);
 void addRegisteredWord(void);
-bool isAlphaOnly(wchar_t word[]);
 
 #endif /* swordx2_h */

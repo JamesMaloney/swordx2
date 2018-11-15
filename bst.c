@@ -3,10 +3,7 @@
 //  by Giacomo Menchi
 //
 
-#include <stdbool.h>
 #include <stdlib.h>
-#include <wchar.h>
-#include <wctype.h>
 #include "bst.h"
 #include "swordx2.h"
 
@@ -41,7 +38,7 @@ Node* search(Node *root, wchar_t occurrence[50]) {
     return search(root->right, occurrence);
 }
 
-void visitInorder(FILE *fileout, Node *root, bool alpha) {
+void visitInorder(FILE *fileout, Node *root, short alpha) {
     if(!root) {
         return;
     }
@@ -52,7 +49,7 @@ void visitInorder(FILE *fileout, Node *root, bool alpha) {
     visitInorder(fileout, root->right, alpha);
 }
 
-void findFirstOccurrence(FILE *fileout, Node *root, bool alpha) {
+void findFirstOccurrence(FILE *fileout, Node *root, short alpha) {
     if(mostfrequent) {
         if(mostfrequent->wordcounter == -1) {
             mostfrequent = NULL;

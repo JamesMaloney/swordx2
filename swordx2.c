@@ -3,31 +3,18 @@
 //  by Giacomo Menchi
 //
 
-#include <dirent.h>
-#include <getopt.h>
 #include <glob.h>
 #include <libgen.h>
-#include <limits.h>
 #include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
-#include <sys/types.h>
-#include <time.h>
-#include <unistd.h>
 #include <wchar.h>
-#include <wctype.h>
 #include "swordx2.h"
 #include "bst.h"
 
 //Variables used for additional options and char validity checking
-bool alpha = false;
-bool byoccurrence = false;
-bool custompath = false;
-bool links = false;
-bool recursive = false;
 char excludedfile[200];
 char logfile[200];
 char outfile[200];
@@ -36,10 +23,14 @@ Node *ignored = NULL;
 int minlength = 0;
 int ignoredwords = 0;
 int registeredwords = 0;
+short alpha = 0;
+short byoccurrence = 0;
+short custompath = 0;
+short links = 0;
+short recursive = 0;
 
 int main(int argc, char *argv[]) {
-    //Sets locale to italian and coding to UTF-8 for accents recognition
-    setlocale(LC_ALL, "it_IT.UTF-8");
+    setUpLocale();
     memset(excludedfile, 0, 200);
     memset(outfile, 0, 200);
     //Calls method optionsManager which takes input parameters and manages them, returning the index of the first input file/folder
@@ -65,6 +56,18 @@ int main(int argc, char *argv[]) {
     return 0;
 }
 
+void setUpLocale(void) {
+    FILE *locale;
+    char ctype[30];
+    locale = popen("locale | grep LC_CTYPE", "r");
+    fgets(ctype, sizeof(ctype), locale);
+    pclose(locale);
+    char *systemlocale;
+    systemlocale = strtok(ctype,"\"");
+    systemlocale = strtok(NULL,"\"");
+    setlocale(LC_ALL, systemlocale);
+}
+
 int optionsManager(int argc, char *argv[]) {
     //getopt_long manages options given by user in both - and -- form, every option found increases the index of the first input parameter
     int optchar, index = 1;
@@ -72,7 +75,7 @@ int optionsManager(int argc, char *argv[]) {
         switch(optchar) {
                 //"a" case: the boolean corresponding to the "alpha" option is put to true
             case 'a': {
-                alpha = true;
+                alpha = 1;
                 index++;
                 break;
             }
@@ -84,7 +87,7 @@ int optionsManager(int argc, char *argv[]) {
             }
                 //"f" case: the "links" boolean is set to true and will be used later
             case 'f': {
-                links = true;
+                links = 1;
                 index++;
                 break;
             }
@@ -102,7 +105,7 @@ int optionsManager(int argc, char *argv[]) {
                     printf("Error in ignored words file opening!\n");
                     exit(1);
                 }
-                bool valid = false;
+                short valid = 0;
                 int letter = 0;
                 //Initializes char array in which words will be stored
                 wchar_t words[50];
@@ -114,7 +117,7 @@ int optionsManager(int argc, char *argv[]) {
                         words[letter] = character;
                         character = getwc(ignoredfile);
                         letter++;
-                        valid = true;
+                        valid = 1;
                     }
                     //As soon as an invalid character is found, the word is added a terminating character (\0) and is copied to the forementioned vector
                     if(!valid) {
@@ -127,7 +130,7 @@ int optionsManager(int argc, char *argv[]) {
                         character = getwc(ignoredfile);
                         letter = 0;
                     }
-                    valid = false;
+                    valid = 0;
                 }
                 fclose(ignoredfile);
                 index+=2;
@@ -151,19 +154,19 @@ int optionsManager(int argc, char *argv[]) {
                 //"o" case: the output path is saved to the "outfile" variable and the "custompath" variable reminds that was user-specified
             case 'o': {
                 strcpy(outfile, argv[index+1]);
-                custompath = true;
+                custompath = 1;
                 index+=2;
                 break;
             }
                 //"r" case: turns on the recursion
             case 'r': {
-                recursive = true;
+                recursive = 1;
                 index++;
                 break;
             }
                 //"s" case: words will be rearranged in occurences number order in print method
             case 's': {
-                byoccurrence = true;
+                byoccurrence = 1;
                 index++;
                 break;
             }
@@ -258,7 +261,7 @@ void visitDirectory(char path[]) {
 }
 
 void readDirectory(DIR *directory, char fullpath[200], char path[]) {
-    while(true) {
+    while(1) {
         //dirent library is used to manage directory and nested directories (recursive option)
         struct dirent *dir;
         dir = readdir(directory);
@@ -316,8 +319,8 @@ void occurrencesList(char path[]) {
     wchar_t words[50];
     wmemset(words, 0, 50);
     int letter = 0;
-    bool toignore = false;
-    bool valid = false;
+    short toignore = 0;
+    short valid = 0;
     FILE *filein = fopen(path, "r");
     if(!filein) {
         printf("Error in opening input file %s!\n", path);
@@ -348,7 +351,7 @@ void printLog(clock_t end, clock_t begin, char path[]) {
     fclose(log);
 }
 
-void readFile(FILE *filein, wchar_t words[50], int letter, bool toignore, bool valid) {
+void readFile(FILE *filein, wchar_t words[50], int letter, short toignore, short valid) {
     wchar_t character = getwc(filein);
     while(!feof(filein)) {
         //If character is alphanumeric or belongs to the chosen locale, it is chosen as valid
@@ -356,7 +359,7 @@ void readFile(FILE *filein, wchar_t words[50], int letter, bool toignore, bool v
             words[letter] = character;
             character = getwc(filein);
             letter++;
-            valid = true;
+            valid = 1;
         }
         if(!valid) {
             if(letter != 0) {
@@ -365,25 +368,25 @@ void readFile(FILE *filein, wchar_t words[50], int letter, bool toignore, bool v
             wmemset(words, 0, 50);
             character = getwc(filein);
             letter = 0;
-            toignore = false;
+            toignore = 0;
         }
-        valid = false;
+        valid = 0;
     }
     fclose(filein);
 }
 
-void checkAndAddWord(wchar_t words[50], int letter, bool toignore) {
+void checkAndAddWord(wchar_t words[50], int letter, short toignore) {
     words[letter] = '\0';
     //When "-m" is chosen, the letter is length-checked before adding
     if(letter < minlength) {
-        toignore = true;
+        toignore = 1;
     }
     //Should "-i" option be active, every word is checked if it has be ignored before being added to the list
     if(ignored && !toignore) {
         Node *start = ignored;
         ignored = search(ignored, words);
         if(ignored) {
-            toignore = true;
+            toignore = 1;
         }
         ignored = start;
     }
@@ -414,7 +417,7 @@ void printWords(void) {
 void printByOccurrence(FILE *fileout) {
     //The occurrence sorted one must be reordered before writing it to output
     Node* mostfrequent = NULL;
-    while(true) {
+    while(1) {
         findFirstOccurrence(fileout, root, alpha);
         mostfrequent = getmostfrequent();
         if(!mostfrequent) {
@@ -426,16 +429,16 @@ void printByOccurrence(FILE *fileout) {
     }
 }
 
-bool isAlphaOnly(wchar_t word[]) {
+short isAlphaOnly(wchar_t word[]) {
     //Checks if word contains numbers and, in case, returns false; in any other case the result is true
     int i = 0;
     while(i < wcslen(word)) {
         if(iswdigit(word[i])) {
-            return false;
+            return 0;
         }
         i++;
     }
-    return true;
+    return 1;
 }
 
 void addRegisteredWord(void) {
