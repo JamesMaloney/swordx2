@@ -71,6 +71,6 @@ void findFirstOccurrence(FILE *fileout, Node *root, short alpha) {
     }
 }
 
-Node* getmostfrequent(void) {
+Node* getMostFrequent(void) {
     return mostfrequent;
 }
