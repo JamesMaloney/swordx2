@@ -16,7 +16,7 @@ typedef struct node {
 } Node;
 
 void findFirstOccurrence(FILE *fileout, Node *root, short alpha);
-Node* getmostfrequent(void);
+Node* getMostFrequent(void);
 Node* insert(Node *root, wchar_t occurrence[50]);
 Node* search(Node *root, wchar_t occurrence[50]);
 void visitInorder(FILE *fileout, Node *root, short alpha);
